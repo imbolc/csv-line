@@ -1,0 +1,13 @@
+[package]
+name = "csv-line"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+csv = "1.1.6"
+quick-csv = "0.1.6"
+serde = "1.0.130"
+thiserror = "1.0.30"
+
+[dev-dependencies]
+serde = { version = "1.0.130", features = ["derive"] }
