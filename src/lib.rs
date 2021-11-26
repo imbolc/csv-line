@@ -1,6 +1,3 @@
-//! csv-line
-//! ========
-//!
 //! Fast deserialization of a single csv line.
 //!
 //! Usage
@@ -25,29 +22,40 @@
 //!
 //! [serde_json]: https://github.com/serde-rs/json
 //! [bench]: https://github.com/imbolc/csv-line/blob/main/benches/csv-line.rs
+
+#![warn(clippy::all, missing_docs, nonstandard_style, future_incompatible)]
+#![forbid(unsafe_code)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
+
 use csv::StringRecord;
 use serde::de::DeserializeOwned;
 
+/// An error that can occur when processing CSV data
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    /// A wrapper for `quick_csv::Error`
     #[error("quick_csv")]
     QuickCsv(#[from] quick_csv::error::Error),
+    /// A wrapper for `csv::Error`
     #[error("csv")]
     Csv(#[from] csv::Error),
 }
 
+/// A type alias for `Result<T, csv_line::Error>`
 pub type Result<T> = core::result::Result<T, Error>;
 
+/// A struct to hold the parser settings
 pub struct CSVLine {
     delimiter: u8,
 }
 
 impl CSVLine {
+    /// Returns a new parser initialized with the default delimiter
     pub fn new() -> Self {
         Default::default()
     }
 
-    /// Sets a new delimiter
+    /// Sets a new delimiter, default is `;`
     pub fn delimiter(mut self, delimiter: u8) -> Self {
         self.delimiter = delimiter;
         self
