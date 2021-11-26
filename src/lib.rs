@@ -16,7 +16,7 @@ pub struct CSVLine {
 }
 
 impl CSVLine {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Default::default()
     }
 
