@@ -1,7 +1,13 @@
 [package]
-name = "csv-line"
-version = "0.1.0"
+description = "Fast deserialization of a single csv line"
 edition = "2021"
+homepage = "https://github.com/imbolc/csv-line"
+keywords = ["csv", "serde"]
+license = "MIT"
+name = "csv-line"
+readme = "README.md"
+repository = "https://github.com/imbolc/csv-line"
+version = "0.1.0"
 
 [dependencies]
 csv = "1.1"
