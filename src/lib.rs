@@ -18,7 +18,7 @@
 //! test csv_line    ... bench:         240 ns/iter (+/- 14)
 //! test serde_json  ... bench:         124 ns/iter (+/- 5)
 //! ```
-//! The benchmark code is in [here][bench].
+//! The benchmark code is [here][bench].
 //!
 //! [serde_json]: https://github.com/serde-rs/json
 //! [bench]: https://github.com/imbolc/csv-line/blob/main/benches/csv-line.rs
