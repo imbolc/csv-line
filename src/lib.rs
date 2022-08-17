@@ -56,7 +56,7 @@ impl CSVLine {
     }
 
     /// Sets a new delimiter, the default is `,`
-    pub fn delimiter(mut self, delimiter: u8) -> Self {
+    pub fn with_delimiter(mut self, delimiter: u8) -> Self {
         self.delimiter = delimiter;
         self
     }
@@ -132,7 +132,7 @@ mod tests {
         struct Foo(String, String);
         assert_eq!(
             CSVLine::new()
-                .delimiter(b'\t')
+                .with_delimiter(b'\t')
                 .decode_str::<Foo>("foo\tbar")
                 .unwrap(),
             Foo("foo".into(), "bar".into())
