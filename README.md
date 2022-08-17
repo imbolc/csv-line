@@ -13,6 +13,7 @@ Usage
 struct Foo(String, i32);
 
 assert_eq!(csv_line::from_str::<Foo>("foo,42").unwrap(), Foo("foo".into(), 42));
+assert_eq!(csv_line::from_str_sep::<Foo>("foo 42", b' ').unwrap(), Foo("foo".into(), 42));
 ```
 
 Speed
