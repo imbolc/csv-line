@@ -47,25 +47,25 @@ pub type Result<T> = core::result::Result<T, Error>;
 
 /// A struct to hold the parser settings
 pub struct CSVLine {
-    delimiter: u8,
+    separator: u8,
 }
 
 impl CSVLine {
-    /// Returns a new parser initialized with the default delimiter
+    /// Returns a new parser initialized with the default separator
     pub fn new() -> Self {
         Default::default()
     }
 
-    /// Sets a new delimiter, the default is `,`
-    pub fn delimiter(mut self, delimiter: u8) -> Self {
-        self.delimiter = delimiter;
+    /// Sets a new separator, the default is `,`
+    pub fn separator(mut self, separator: u8) -> Self {
+        self.separator = separator;
         self
     }
 
     /// Deserializes the string
     pub fn decode_str<T: DeserializeOwned>(&self, s: &str) -> Result<T> {
         let record = if let Some(row) = quick_csv::Csv::from_string(s)
-            .delimiter(self.delimiter)
+            .delimiter(self.separator)
             .into_iter()
             .next()
         {
@@ -79,7 +79,7 @@ impl CSVLine {
 
 impl Default for CSVLine {
     fn default() -> Self {
-        Self { delimiter: b',' }
+        Self { separator: b',' }
     }
 }
 
@@ -88,7 +88,7 @@ pub fn from_str<T: DeserializeOwned>(s: &str) -> Result<T> {
     CSVLine::new().decode_str(s)
 }
 
-/// Deserialize a csv formatted &str where the separator/delimiter is specified
+/// Deserialize a csv formatted &str where the separator is specified
 ///
 /// # Arguments
 ///
@@ -104,7 +104,7 @@ pub fn from_str<T: DeserializeOwned>(s: &str) -> Result<T> {
 /// assert_eq!(csv_line::from_str_sep::<Bar>("31 42 28 97 0", b' ').unwrap(), Bar(vec![31,42,28,97,0]));
 /// ```
 pub fn from_str_sep<T: DeserializeOwned>(s: &str, sep: u8) -> Result<T> {
-    CSVLine::new().delimiter(sep).decode_str(s)
+    CSVLine::new().separator(sep).decode_str(s)
 }
 
 #[cfg(test)]
@@ -163,7 +163,7 @@ mod tests {
         struct Foo(String, String);
         assert_eq!(
             CSVLine::new()
-                .delimiter(b'\t')
+                .separator(b'\t')
                 .decode_str::<Foo>("foo\tbar")
                 .unwrap(),
             Foo("foo".into(), "bar".into())
