@@ -7,6 +7,14 @@
 //! struct Foo(String, i32);
 //!
 //! assert_eq!(csv_line::from_str::<Foo>("foo,42").unwrap(), Foo("foo".into(), 42));
+//! assert_eq!(csv_line::from_str_sep::<Foo>("foo 42", b' ').unwrap(), Foo("foo".into(), 42));
+//!
+//!
+//! #[derive(Debug, PartialEq, serde::Deserialize)]
+//! struct Bar(Vec<u32>);
+//!
+//! assert_eq!(csv_line::from_str::<Bar>("31,42,28,97,0").unwrap(), Bar(vec![31,42,28,97,0]));
+//! assert_eq!(csv_line::from_str_sep::<Bar>("31 42 28 97 0", b' ').unwrap(), Bar(vec![31,42,28,97,0]));
 //! ```
 //!
 //! Speed
@@ -87,6 +95,19 @@ pub fn from_str<T: DeserializeOwned>(s: &str) -> Result<T> {
     CSVLine::new().decode_str(s)
 }
 
+/// Deserialize a csv formatted &str where the separator/delimiter is specified
+///
+/// # Arguments
+///
+/// * `s` - A borrowed string slice containing csv formatted data
+/// * `sep` - A u8 containing the separator use to csv format `s`
+///
+/// # Example with whitespace as separator:
+/// `from_str_sep("34 35 98", b' ')`
+pub fn from_str_sep<T: DeserializeOwned>(s: &str, sep: u8) -> Result<T> {
+    CSVLine::new().delimiter(sep).decode_str(s)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -97,6 +118,7 @@ mod tests {
         #[derive(Debug, PartialEq, Deserialize)]
         struct Foo(String);
         assert_eq!(from_str::<Foo>("foo").unwrap(), Foo("foo".into()));
+        assert_eq!(from_str_sep::<Foo>("foo", b' ').unwrap(), Foo("foo".into()));
     }
 
     #[test]
@@ -104,6 +126,7 @@ mod tests {
         #[derive(Debug, PartialEq, Deserialize)]
         struct Foo(Option<String>);
         assert_eq!(from_str::<Foo>("").unwrap(), Foo(None));
+        assert_eq!(from_str_sep::<Foo>("", b' ').unwrap(), Foo(None));
     }
 
     #[test]
@@ -119,6 +142,15 @@ mod tests {
             from_str::<Foo>(r#""foo,bar",,1,true"#).unwrap(),
             Foo {
                 text: "foo,bar".into(),
+                maybe_text: None,
+                num: 1,
+                flag: true
+            }
+        );
+        assert_eq!(
+            from_str_sep::<Foo>(r#""foo bar"  1 true"#, b' ').unwrap(),
+            Foo {
+                text: "foo bar".into(),
                 maybe_text: None,
                 num: 1,
                 flag: true
