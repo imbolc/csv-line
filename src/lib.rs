@@ -55,7 +55,7 @@ impl CSVLine {
         Default::default()
     }
 
-    /// Sets a new delimiter, default is `;`
+    /// Sets a new delimiter, the default is `,`
     pub fn delimiter(mut self, delimiter: u8) -> Self {
         self.delimiter = delimiter;
         self
