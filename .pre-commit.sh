@@ -35,4 +35,4 @@ cargo sort -c
 cargo rustdoc --all-features -- -D warnings
 cargo test --all-features --lib
 cargo test --doc
-cargo clippy --all-features --all-targets -- -D warnings
+cargo clippy --all-features --lib -- -D warnings

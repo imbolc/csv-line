@@ -27,7 +27,7 @@ impl CSVLine {
     /// Deserializes the string
     pub fn decode_str<T: DeserializeOwned>(&self, s: &str) -> Result<T, csv::Error> {
         let record = StringRecord::from_iter(CsvRow::new(s, self.separator));
-        Ok(record.deserialize(None)?)
+        record.deserialize(None)
     }
 }
 

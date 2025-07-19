@@ -2,11 +2,11 @@ use std::{borrow::Cow, str::CharIndices};
 
 #[derive(Debug)]
 enum ParseState {
-    NewField,
-    UnquotedField,
-    QuotedField,
-    QuoteInQuotedField,
-    UnquotedDataAfterQuotedField(usize),
+    New,
+    Unquoted,
+    Quoted,
+    QuoteInQuoted,
+    UnquotedDataAfterQuoted(usize),
 }
 
 /// CSV row
@@ -61,7 +61,7 @@ impl<'a> Iterator for CsvRow<'a> {
 
     /// Returns the next column in the row
     fn next(&mut self) -> Option<Self::Item> {
-        let mut state = ParseState::NewField;
+        let mut state = ParseState::New;
         self.column_needs_unescaping = false;
 
         // Loop over the characters in the line
@@ -74,45 +74,45 @@ impl<'a> Iterator for CsvRow<'a> {
                 // The end of the line has been reached
                 self.done = true;
                 return match state {
-                    ParseState::NewField => {
+                    ParseState::New => {
                         // The line ended at the end of the previous column.
                         // If the previous column ended with a delimiter, add an empty column.
-                        (self.line.chars().last() == Some(self.delimiter)).then(|| "".into())
+                        self.line.ends_with(self.delimiter).then(|| "".into())
                     }
-                    ParseState::UnquotedField => {
+                    ParseState::Unquoted => {
                         // The line ended in an unquoted field
                         Some(self.line[self.column_start..].into())
                     }
-                    ParseState::QuotedField => {
+                    ParseState::Quoted => {
                         // The line ended in an unclosed quoted field
                         Some(self.maybe_unescape(self.column_start + 1, self.line.len()))
                     }
-                    ParseState::QuoteInQuotedField => {
+                    ParseState::QuoteInQuoted => {
                         // The line ended in a properly closed quoted field
                         Some(self.maybe_unescape(self.column_start + 1, self.line.len() - 1))
                     }
-                    ParseState::UnquotedDataAfterQuotedField(unquoted_start) => {
+                    ParseState::UnquotedDataAfterQuoted(unquoted_start) => {
                         let column =
                             self.format_partially_unquoted(unquoted_start, self.line.len());
-                        Some(column.into())
+                        Some(column)
                     }
                 };
             };
 
             match state {
-                ParseState::NewField => {
+                ParseState::New => {
                     if ch == self.delimiter {
                         // An empty column was found
                         self.column_start = ch_pos + self.delimiter_len;
                         return Some("".into());
                     }
                     if ch == '"' {
-                        state = ParseState::QuotedField;
+                        state = ParseState::Quoted;
                     } else {
-                        state = ParseState::UnquotedField;
+                        state = ParseState::Unquoted;
                     }
                 }
-                ParseState::UnquotedField => {
+                ParseState::Unquoted => {
                     if ch == self.delimiter {
                         let column = &self.line[self.column_start..ch_pos];
                         self.column_start = ch_pos + self.delimiter_len;
@@ -125,16 +125,16 @@ impl<'a> Iterator for CsvRow<'a> {
                         return Some(column.into());
                     }
                 }
-                ParseState::QuotedField => {
+                ParseState::Quoted => {
                     if ch == '"' {
-                        state = ParseState::QuoteInQuotedField;
+                        state = ParseState::QuoteInQuoted;
                     }
                 }
-                ParseState::QuoteInQuotedField => {
+                ParseState::QuoteInQuoted => {
                     if ch == '"' {
                         // An escaped quote was found, so continue in the quoted field.
                         self.column_needs_unescaping = true;
-                        state = ParseState::QuotedField;
+                        state = ParseState::Quoted;
                         continue;
                     }
 
@@ -153,13 +153,13 @@ impl<'a> Iterator for CsvRow<'a> {
                     }
 
                     // Data was found after a quoted field, so treat it as an unquoted continuation.
-                    state = ParseState::UnquotedDataAfterQuotedField(ch_pos);
+                    state = ParseState::UnquotedDataAfterQuoted(ch_pos);
                 }
-                ParseState::UnquotedDataAfterQuotedField(unquoted_start) => {
+                ParseState::UnquotedDataAfterQuoted(unquoted_start) => {
                     if ch == self.delimiter {
                         let column = self.format_partially_unquoted(unquoted_start, ch_pos);
                         self.column_start = ch_pos + self.delimiter_len;
-                        return Some(column.into());
+                        return Some(column);
                     }
                 }
             }
