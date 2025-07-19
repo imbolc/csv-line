@@ -10,7 +10,7 @@ enum ParseState {
 }
 
 /// CSV row
-pub struct CsvRow<'a> {
+pub(crate) struct CsvRow<'a> {
     /// The line to parse
     line: &'a str,
     /// The field delimiter
@@ -26,7 +26,7 @@ pub struct CsvRow<'a> {
 
 impl<'a> CsvRow<'a> {
     /// Create a new iterator
-    pub fn new(line: &'a str, delimiter: char) -> Self {
+    pub(crate) fn new(line: &'a str, delimiter: char) -> Self {
         let char_indices = line.char_indices();
         Self {
             line,
@@ -122,7 +122,7 @@ impl<'a> Iterator for CsvRow<'a> {
                     if ch == '\n' || ch == '\r' {
                         let column = &self.line[self.column_start..ch_pos];
                         self.done = true;
-                        return dbg!(Some(column.into()));
+                        return Some(column.into());
                     }
                 }
                 ParseState::QuotedField => {
@@ -208,8 +208,9 @@ mod tests {
         };
     }
 
-    /// According to §1.5, if fields are not enclosed with double quotes, then double quotes may not appear inside the fields.
-    /// However, this implementation follows the `rust_csv` decision to allow it.
+    /// According to §1.5, if fields are not enclosed with double quotes, then
+    /// double quotes may not appear inside the fields. However, this
+    /// implementation follows the `rust_csv` decision to allow it.
     #[test]
     fn quotes_in_unquoted_field() {
         test_line!(r#"foo"bar"#, [r#"foo"bar"#]);
@@ -220,8 +221,8 @@ mod tests {
     // FIELD SEPARATION, EMPTY FIELDS (RFC 4180 §2.1, §2.2, §2.3)
     // =========================================================================
 
-    /// §2.1: Each record is on a separate line, delimited by a line break (CRLF).
-    /// §2.2: Fields are separated by commas.
+    /// §2.1: Each record is on a separate line, delimited by a line break
+    /// (CRLF). §2.2: Fields are separated by commas.
     /// §2.3: The last field in the record may be empty.
     #[test]
     fn basic_unquoted_fields() {
@@ -237,8 +238,9 @@ mod tests {
     // QUOTED FIELDS, INCLUDING EMPTY FIELDS (RFC 4180 §2.5, §2.7)
     // =========================================================================
 
-    /// §2.5: Fields that contain commas, CR, LF, or double quotes must be quoted.
-    /// §2.7: A double quote inside a quoted field is escaped as two double quotes.
+    /// §2.5: Fields that contain commas, CR, LF, or double quotes must be
+    /// quoted. §2.7: A double quote inside a quoted field is escaped as two
+    /// double quotes.
     #[test]
     fn quoted_fields() {
         test_line!(r#""foo",bar"#, ["foo", "bar"]);
@@ -324,8 +326,9 @@ mod tests {
     // NON-RFC BEHAVIOR & EDGE CASES
     // =========================================================================
 
-    /// §2.6: Spaces between the closing quote and the comma or newline are not permitted.
-    /// Many implementations are permissive, but this one includes the trailing space in the field.
+    /// §2.6: Spaces between the closing quote and the comma or newline are not
+    /// permitted. Many implementations are permissive, but this one
+    /// includes the trailing space in the field.
     #[test]
     fn space_after_closing_quote_is_error() {
         test_line!(r#""foo" ,bar"#, ["foo ", "bar"]);

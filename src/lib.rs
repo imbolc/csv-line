@@ -1,32 +1,5 @@
-//! Fast deserialization of a single csv line.
-//!
-//! Usage
-//! -----
-//! ```
-//! #[derive(Debug, PartialEq, serde::Deserialize)]
-//! struct Foo(String, i32);
-//!
-//! assert_eq!(csv_line::from_str::<Foo>("foo,42").unwrap(), Foo("foo".into(), 42));
-//! assert_eq!(csv_line::from_str_sep::<Foo>("foo 42", ' ').unwrap(), Foo("foo".into(), 42));
-//! ```
-//!
-//! Speed
-//! -----
-//! The performance is comparable with [serde_json] (lower is better):
-//! ```bench
-//! test csv_builder ... bench:      16,003 ns/iter (+/- 914)
-//! test csv_core    ... bench:      15,695 ns/iter (+/- 1,155)
-//! test csv_line    ... bench:         240 ns/iter (+/- 14)
-//! test serde_json  ... bench:         124 ns/iter (+/- 5)
-//! ```
-//! The benchmark code is [here][bench].
-//!
-//! [serde_json]: https://github.com/serde-rs/json
-//! [bench]: https://github.com/imbolc/csv-line/blob/main/benches/csv-line.rs
-
-#![warn(clippy::all, missing_docs, nonstandard_style, future_incompatible)]
-#![forbid(unsafe_code)]
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![doc = include_str!("../README.md")]
 
 use csv::StringRecord;
 use parse::CsvRow;
@@ -74,7 +47,7 @@ pub fn from_str<T: DeserializeOwned>(s: &str) -> Result<T, csv::Error> {
 /// # Arguments
 ///
 /// * `s` - A borrowed string slice containing csv formatted data
-/// * `sep` - A u8 containing the separator use to csv format `s`
+/// * `sep` - A char containing the separator use to csv format `s`
 ///
 /// # Example with whitespace as separator:
 ///
@@ -90,8 +63,9 @@ pub fn from_str_sep<T: DeserializeOwned>(s: &str, sep: char) -> Result<T, csv::E
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use serde::Deserialize;
+
+    use super::*;
 
     #[test]
     fn basic() {
