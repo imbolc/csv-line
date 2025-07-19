@@ -33,6 +33,6 @@ cargo machete
 cargo +nightly fmt -- --check
 cargo sort -c
 cargo rustdoc --all-features -- -D warnings
-cargo test --all-features --lib
+cargo test --all-features
 cargo test --doc
-cargo clippy --all-features --lib -- -D warnings
+cargo clippy --all-features -- -D warnings
