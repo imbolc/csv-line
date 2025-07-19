@@ -7,7 +7,7 @@
 //! struct Foo(String, i32);
 //!
 //! assert_eq!(csv_line::from_str::<Foo>("foo,42").unwrap(), Foo("foo".into(), 42));
-//! assert_eq!(csv_line::from_str_sep::<Foo>("foo 42", b' ').unwrap(), Foo("foo".into(), 42));
+//! assert_eq!(csv_line::from_str_sep::<Foo>("foo 42", ' ').unwrap(), Foo("foo".into(), 42));
 //! ```
 //!
 //! Speed
@@ -29,16 +29,16 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
 use csv::StringRecord;
+use parse::CsvRow;
 use serde::de::DeserializeOwned;
+
+mod parse;
 
 /// An error that can occur when processing CSV data
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    /// A wrapper for `quick_csv::Error`
-    #[error("quick_csv")]
-    QuickCsv(#[from] quick_csv::error::Error),
     /// A wrapper for `csv::Error`
-    #[error("csv")]
+    #[error(transparent)]
     Csv(#[from] csv::Error),
 }
 
@@ -47,7 +47,7 @@ pub type Result<T> = core::result::Result<T, Error>;
 
 /// A struct to hold the parser settings
 pub struct CSVLine {
-    separator: u8,
+    separator: char,
 }
 
 impl CSVLine {
@@ -57,29 +57,21 @@ impl CSVLine {
     }
 
     /// Sets a new separator, the default is `,`
-    pub fn with_separator(mut self, separator: u8) -> Self {
+    pub fn with_separator(mut self, separator: char) -> Self {
         self.separator = separator;
         self
     }
 
     /// Deserializes the string
     pub fn decode_str<T: DeserializeOwned>(&self, s: &str) -> Result<T> {
-        let record = if let Some(row) = quick_csv::Csv::from_string(s)
-            .delimiter(self.separator)
-            .into_iter()
-            .next()
-        {
-            StringRecord::from_iter(row?.columns()?)
-        } else {
-            StringRecord::from(vec![""])
-        };
+        let record = StringRecord::from_iter(CsvRow::new(s, self.separator));
         Ok(record.deserialize(None)?)
     }
 }
 
 impl Default for CSVLine {
     fn default() -> Self {
-        Self { separator: b',' }
+        Self { separator: ',' }
     }
 }
 
@@ -101,9 +93,9 @@ pub fn from_str<T: DeserializeOwned>(s: &str) -> Result<T> {
 /// #[derive(Debug, PartialEq, serde::Deserialize)]
 /// struct Bar(Vec<u32>);
 ///
-/// assert_eq!(csv_line::from_str_sep::<Bar>("31 42 28 97 0", b' ').unwrap(), Bar(vec![31,42,28,97,0]));
+/// assert_eq!(csv_line::from_str_sep::<Bar>("31 42 28 97 0", ' ').unwrap(), Bar(vec![31,42,28,97,0]));
 /// ```
-pub fn from_str_sep<T: DeserializeOwned>(s: &str, sep: u8) -> Result<T> {
+pub fn from_str_sep<T: DeserializeOwned>(s: &str, sep: char) -> Result<T> {
     CSVLine::new().with_separator(sep).decode_str(s)
 }
 
@@ -117,7 +109,7 @@ mod tests {
         #[derive(Debug, PartialEq, Deserialize)]
         struct Foo(String);
         assert_eq!(from_str::<Foo>("foo").unwrap(), Foo("foo".into()));
-        assert_eq!(from_str_sep::<Foo>("foo", b' ').unwrap(), Foo("foo".into()));
+        assert_eq!(from_str_sep::<Foo>("foo", ' ').unwrap(), Foo("foo".into()));
     }
 
     #[test]
@@ -125,7 +117,7 @@ mod tests {
         #[derive(Debug, PartialEq, Deserialize)]
         struct Foo(Option<String>);
         assert_eq!(from_str::<Foo>("").unwrap(), Foo(None));
-        assert_eq!(from_str_sep::<Foo>("", b' ').unwrap(), Foo(None));
+        assert_eq!(from_str_sep::<Foo>("", ' ').unwrap(), Foo(None));
     }
 
     #[test]
@@ -147,7 +139,7 @@ mod tests {
             }
         );
         assert_eq!(
-            from_str_sep::<Foo>(r#""foo bar"  1 true"#, b' ').unwrap(),
+            from_str_sep::<Foo>(r#""foo bar"  1 true"#, ' ').unwrap(),
             Foo {
                 text: "foo bar".into(),
                 maybe_text: None,
@@ -163,7 +155,7 @@ mod tests {
         struct Foo(String, String);
         assert_eq!(
             CSVLine::new()
-                .with_separator(b'\t')
+                .with_separator('\t')
                 .decode_str::<Foo>("foo\tbar")
                 .unwrap(),
             Foo("foo".into(), "bar".into())

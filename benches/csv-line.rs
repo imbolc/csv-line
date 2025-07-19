@@ -1,7 +1,7 @@
 #![feature(test)]
 
 extern crate test;
-use serde::{de::DeserializeOwned, Deserialize};
+use serde::{Deserialize, de::DeserializeOwned};
 use test::Bencher;
 
 const CSV_STR: &str = "\"foo,bar\",,1,true\n";

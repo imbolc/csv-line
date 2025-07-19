@@ -10,8 +10,7 @@ repository = "https://github.com/imbolc/csv-line"
 version = "0.2.0"
 
 [dependencies]
-csv = "1.1"
-quick-csv = "0.1.6"
+csv = "1"
 serde = "1"
 thiserror = "1"
 
