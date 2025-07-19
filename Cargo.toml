@@ -7,12 +7,12 @@ license = "MIT"
 name = "csv-line"
 readme = "README.md"
 repository = "https://github.com/imbolc/csv-line"
-version = "0.2.0"
+version = "0.3.0"
 
 [dependencies]
 csv = "1"
 serde = "1"
-thiserror = "1"
+thiserror = "2"
 
 [dev-dependencies]
 csv-core = "0.1"

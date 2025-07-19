@@ -34,17 +34,6 @@ use serde::de::DeserializeOwned;
 
 mod parse;
 
-/// An error that can occur when processing CSV data
-#[derive(Debug, thiserror::Error)]
-pub enum Error {
-    /// A wrapper for `csv::Error`
-    #[error(transparent)]
-    Csv(#[from] csv::Error),
-}
-
-/// A type alias for `Result<T, csv_line::Error>`
-pub type Result<T> = core::result::Result<T, Error>;
-
 /// A struct to hold the parser settings
 pub struct CSVLine {
     separator: char,
@@ -63,7 +52,7 @@ impl CSVLine {
     }
 
     /// Deserializes the string
-    pub fn decode_str<T: DeserializeOwned>(&self, s: &str) -> Result<T> {
+    pub fn decode_str<T: DeserializeOwned>(&self, s: &str) -> Result<T, csv::Error> {
         let record = StringRecord::from_iter(CsvRow::new(s, self.separator));
         Ok(record.deserialize(None)?)
     }
@@ -76,7 +65,7 @@ impl Default for CSVLine {
 }
 
 /// Deserializes the string
-pub fn from_str<T: DeserializeOwned>(s: &str) -> Result<T> {
+pub fn from_str<T: DeserializeOwned>(s: &str) -> Result<T, csv::Error> {
     CSVLine::new().decode_str(s)
 }
 
@@ -95,7 +84,7 @@ pub fn from_str<T: DeserializeOwned>(s: &str) -> Result<T> {
 ///
 /// assert_eq!(csv_line::from_str_sep::<Bar>("31 42 28 97 0", ' ').unwrap(), Bar(vec![31,42,28,97,0]));
 /// ```
-pub fn from_str_sep<T: DeserializeOwned>(s: &str, sep: char) -> Result<T> {
+pub fn from_str_sep<T: DeserializeOwned>(s: &str, sep: char) -> Result<T, csv::Error> {
     CSVLine::new().with_separator(sep).decode_str(s)
 }
 
