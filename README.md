@@ -2,7 +2,7 @@
 [![Crates.io](https://img.shields.io/crates/v/csv-line.svg)](https://crates.io/crates/csv-line)
 [![Documentation](https://docs.rs/csv-line/badge.svg)](https://docs.rs/csv-line)
 
-Fast deserialization of a single csv line.
+Fast deserialization of a single CSV line.
 
 ## Usage
 
@@ -22,7 +22,7 @@ assert_eq!(
 
 ## Speed
 
-The performance is comparable with `serde_json` (lower is better):
+The performance is comparable to `serde_json` (lower is better):
 
 ```text
 test csv_builder ... bench:      13,190.73 ns/iter (+/- 793.61)
@@ -31,12 +31,12 @@ test csv_line    ... bench:         176.50 ns/iter (+/- 5.15)
 test serde_json  ... bench:          88.24 ns/iter (+/- 2.12
 ```
 
-The benchmark code is
+The benchmark code is available
 [here](https://github.com/imbolc/csv-line/blob/main/benches/csv-line.rs).
 
 ## Contributing
 
-Please run [.pre-commit.sh] before sending a PR, it will check everything.
+Please run [.pre-commit.sh] before submitting a pull request to ensure all checks pass.
 
 ## License
 

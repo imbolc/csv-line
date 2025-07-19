@@ -7,24 +7,24 @@ use serde::de::DeserializeOwned;
 
 mod parse;
 
-/// A struct to hold the parser settings
+/// A parser for a single line of CSV data.
 pub struct CSVLine {
     separator: char,
 }
 
 impl CSVLine {
-    /// Returns a new parser initialized with the default separator
+    /// Creates a new parser with the default separator (',').
     pub fn new() -> Self {
         Default::default()
     }
 
-    /// Sets a new separator, the default is `,`
+    /// Sets the separator character for the parser.
     pub fn with_separator(mut self, separator: char) -> Self {
         self.separator = separator;
         self
     }
 
-    /// Deserializes the string
+    /// Deserializes a string into a custom type.
     pub fn decode_str<T: DeserializeOwned>(&self, s: &str) -> Result<T, csv::Error> {
         let record = StringRecord::from_iter(CsvRow::new(s, self.separator));
         record.deserialize(None)
@@ -37,19 +37,19 @@ impl Default for CSVLine {
     }
 }
 
-/// Deserializes the string
+/// Deserializes a string into a custom type.
 pub fn from_str<T: DeserializeOwned>(s: &str) -> Result<T, csv::Error> {
     CSVLine::new().decode_str(s)
 }
 
-/// Deserialize a csv formatted &str where the separator is specified
+/// Deserializes a string with a custom separator.
 ///
 /// # Arguments
 ///
-/// * `s` - A borrowed string slice containing csv formatted data
-/// * `sep` - A char containing the separator use to csv format `s`
+/// * `s` - The string slice to deserialize.
+/// * `sep` - The separator character.
 ///
-/// # Example with whitespace as separator:
+/// # Example
 ///
 /// ```
 /// #[derive(Debug, PartialEq, serde::Deserialize)]
